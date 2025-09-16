@@ -1,0 +1,28 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Math Game for Kids</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@900&family=Comic+Neue:wght@700&family=Luckiest+Guy&family=Chewy&family=Fredoka+One&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div id="scoreboard">
+    <span id="correct-count">0</span> / <span id="wrong-count">0</span>
+    <button id="reset-btn" title="Reset" aria-label="Reset">
+      <svg width="38" height="38" viewBox="0 0 38 38" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="19" cy="19" r="18" stroke="#ffd700" stroke-width="3" fill="none"/>
+        <path d="M27 19a8 8 0 1 1-8-8" stroke="#ffd700" stroke-width="3" fill="none" stroke-linecap="round"/>
+        <polygon points="19,5 24,10 14,10" fill="#ffd700"/>
+      </svg>
+    </button>
+</div>
+<div id="puzzle-container">
+    <div id="puzzle"></div>
+    <div id="answers"></div>
+    <div id="overlay" style="display:none;"></div>
+</div>
+<script src="main.js"></script>
+</body>
+</html>
