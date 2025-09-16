@@ -164,23 +164,6 @@ function renderStats() {
   statList.innerHTML = html;
 }
 
-document.getElementById('overlay').onclick = () => {
-  nextPuzzle();
-};
-document.getElementById('reset-btn').onclick = () => {
-  resetGame();
-};
-document.getElementById('stat-btn').onclick = () => {
-  renderStats();
-  document.getElementById('stat-overlay').style.display = 'flex';
-};
-document.getElementById('close-stat-btn').style.display = 'none';
-document.getElementById('stat-overlay').onclick = (e) => {
-  if (e.target === document.getElementById('stat-overlay') || e.target === document.getElementById('stat-panel')) {
-    document.getElementById('stat-overlay').style.display = 'none';
-  }
-};
-
 window.onload = () => {
   if (!loadState()) {
     resetGame();
@@ -188,4 +171,20 @@ window.onload = () => {
     updateScore();
     renderPuzzle();
   }
+  document.getElementById('overlay').onclick = () => {
+    nextPuzzle();
+  };
+  document.getElementById('reset-btn').onclick = () => {
+    resetGame();
+  };
+  document.getElementById('stat-btn').onclick = () => {
+    renderStats();
+    document.getElementById('stat-overlay').style.display = 'flex';
+  };
+  document.getElementById('close-stat-btn').style.display = 'none';
+  document.getElementById('stat-overlay').onclick = (e) => {
+    if (e.target === document.getElementById('stat-overlay') || e.target === document.getElementById('stat-panel')) {
+      document.getElementById('stat-overlay').style.display = 'none';
+    }
+  };
 };
