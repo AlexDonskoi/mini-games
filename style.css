@@ -130,10 +130,122 @@
   border-color: #d32f2f;
 }
 #overlay {
+  position: absolute;
+  left: 0; right: 0;
+  top: 160px;
+  width: 100%;
+  height: 160px;
+  background: none;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+  pointer-events: auto;
+  margin: 0;
+  padding: 0;
+}
+#overlay[style*="display: flex"] {
+  display: flex !important;
+}
+#face {
+  margin: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 140px;
+  height: 140px;
+  background: none;
+  border-radius: 50%;
+  box-shadow: 0 4px 24px #ffe082;
+  animation: popin 0.3s cubic-bezier(.5,1.8,.5,1.2);
+}
+@keyframes popin {
+  0% { transform: scale(0.7); opacity: 0; }
+  80% { transform: scale(1.1); opacity: 1; }
+  100% { transform: scale(1); }
+}
+#stat-overlay {
   position: fixed;
   top: 0; left: 0; right: 0; bottom: 0;
-  background: rgba(255, 255, 0, 0); /* fully transparent */
-  z-index: 1000;
-  cursor: pointer;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(255, 215, 0, 0.85);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 3000;
+}
+#stat-panel {
+  background: #fffde7;
+  border-radius: 18px;
+  box-shadow: 0 4px 32px #ffd700;
+  padding: 32px 40px 24px 40px;
+  min-width: 320px;
+  max-width: 90vw;
+  max-height: 80vh;
+  overflow-y: auto;
   display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+#stat-panel h2 {
+  margin-top: 0;
+  margin-bottom: 18px;
+  color: #ff9800;
+  font-size: 2rem;
+}
+#stat-list {
+  width: 100%;
+  margin-bottom: 18px;
+}
+#stat-list table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 1.2rem;
+}
+#stat-list th, #stat-list td {
+  border: 1px solid #ffd700;
+  padding: 6px 12px;
+  text-align: center;
+}
+#close-stat-btn {
+  display: none;
+}
+.stat-simple-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: flex-start;
+}
+.stat-row {
+  display: flex;
+  gap: 12px;
+}
+.stat-cell {
+  display: inline-block;
+  min-width: 38px;
+  padding: 6px 0;
+  text-align: center;
+  font-size: 1.1rem;
+  background: #fffbe7;
+  border-radius: 8px;
+  border: 1px solid #ffd700;
+  color: #ff9800;
+  font-weight: bold;
+}
+.stat-correct {
+  color: #ff9800;
+}
+.stat-wrong {
+  color: #d32f2f;
+}
+.stat-cell-max {
+  border: 2.5px solid #ff9800 !important;
+  box-shadow: 0 0 8px #ffe082;
+}
+.stat-cell-win {
+  border: 2.5px solid #43a047 !important;
+}
+.stat-cell-lost {
+  border: 2.5px solid #d32f2f !important;
 }

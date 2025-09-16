@@ -17,11 +17,21 @@
         <polygon points="19,5 24,10 14,10" fill="#ffd700"/>
       </svg>
     </button>
+    <button id="stat-btn" title="Show Statistics" aria-label="Show Statistics">📊</button>
 </div>
 <div id="puzzle-container">
     <div id="puzzle"></div>
+    <div id="overlay" style="display:none;">
+      <div id="face"></div>
+    </div>
     <div id="answers"></div>
-    <div id="overlay" style="display:none;"></div>
+</div>
+<div id="stat-overlay" style="display:none;">
+  <div id="stat-panel">
+    <h2>Last 50 Games</h2>
+    <div id="stat-list"></div>
+    <button id="close-stat-btn">Close</button>
+  </div>
 </div>
 <script src="main.js"></script>
 </body>
