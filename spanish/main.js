@@ -57,6 +57,9 @@ SYLLABLE_GROUPS.forEach(group => {
   });
 });
 
+const SPRITE_OGG_PATH = 'sounds/sprite.ogg';
+const SPRITEMAP_JSON_PATH = 'spriteMap.json';
+
 // ---------------------------------------------------------------------------
 // Audio Playback — Web Audio API with audio sprite
 // ---------------------------------------------------------------------------
@@ -70,8 +73,8 @@ async function initAudio() {
   
   try {
     const [oggResp, mapResp] = await Promise.all([
-      fetch('sounds/sprite.ogg'),
-      fetch('spriteMap.json')
+      fetch(SPRITE_OGG_PATH),
+      fetch(SPRITEMAP_JSON_PATH)
     ]);
     const arrayBuffer = await oggResp.arrayBuffer();
     audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
@@ -82,10 +85,24 @@ async function initAudio() {
 }
 
 let sourceNode = null;
+let initAttempted = false;
 
 function speak(text) {
   if (!audioContext || !audioBuffer || !spriteMap) {
-    initAudio().then(() => speak(text));
+    if (initAttempted) return;
+    initAttempted = true;
+    initAudio().then(() => {
+      if (audioContext && audioBuffer && spriteMap) {
+        // If everything loaded successfully, we can safely play
+        // and next time the initial if-block won't be hit.
+        speak(text);
+      } else {
+        initAttempted = false;
+      }
+    }).catch(e => {
+      console.error("Audio init failed:", e);
+      initAttempted = false;
+    });
     return;
   }
   
@@ -94,7 +111,14 @@ function speak(text) {
   }
   
   if (sourceNode) {
-    try { sourceNode.stop(); } catch(e) {}
+    try { 
+      sourceNode.stop(); 
+    } catch (e) {
+      // Safely ignore InvalidStateError which happens if the node was already stopped
+      if (!(e instanceof DOMException && e.name === 'InvalidStateError')) {
+        console.error('Unexpected error stopping audio:', e);
+      }
+    }
     sourceNode.disconnect();
   }
   
@@ -106,6 +130,7 @@ function speak(text) {
   sourceNode = audioContext.createBufferSource();
   sourceNode.buffer = audioBuffer;
   sourceNode.connect(audioContext.destination);
+  // start(when, offset, duration)
   sourceNode.start(0, sprite.start, sprite.duration);
   
   sourceNode.onended = () => {
