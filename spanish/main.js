@@ -57,51 +57,85 @@ SYLLABLE_GROUPS.forEach(group => {
   });
 });
 
-// ---------------------------------------------------------------------------
-// Text-to-Speech — Web Speech API with a Spanish voice
-// ---------------------------------------------------------------------------
-let spanishVoice = null;
+const SPRITE_OGG_PATH = 'sounds/sprite.ogg';
+const SPRITEMAP_JSON_PATH = 'spriteMap.json';
 
-function loadVoices() {
-  const voices = window.speechSynthesis.getVoices();
-  spanishVoice =
-    voices.find(v => v.lang === 'es-MX') ||
-    voices.find(v => v.lang === 'es-ES') ||
-    voices.find(v => v.lang.startsWith('es')) ||
-    null;
+// ---------------------------------------------------------------------------
+// Audio Playback — Web Audio API with audio sprite
+// ---------------------------------------------------------------------------
+let audioContext = null;
+let audioBuffer = null;
+let spriteMap = null;
+
+async function initAudio() {
+  if (audioContext) return; // already initialized
+  audioContext = new (window.AudioContext || window.webkitAudioContext)();
+  
+  try {
+    const [oggResp, mapResp] = await Promise.all([
+      fetch(SPRITE_OGG_PATH),
+      fetch(SPRITEMAP_JSON_PATH)
+    ]);
+    const arrayBuffer = await oggResp.arrayBuffer();
+    audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
+    spriteMap = await mapResp.json();
+  } catch (e) {
+    console.error("Failed to load audio sprite:", e);
+  }
 }
 
-if (typeof window.speechSynthesis !== 'undefined') {
-  window.speechSynthesis.onvoiceschanged = loadVoices;
-  loadVoices();
-}
+let sourceNode = null;
+let initAttempted = false;
 
 function speak(text) {
-  if (typeof window.speechSynthesis === 'undefined') return;
-  window.speechSynthesis.cancel();
-  
-  // Fix TTS pronunciation for 'll' syllables which some engines read letter-by-letter
-  let spokenText = text.replace(/^ll/, 'y');
-  
-  // 'ze' is orthographically rare and often spelled out. 'ce' produces the exact same sound.
-  if (spokenText === 'ze') {
-    spokenText = 'ce';
+  if (!audioContext || !audioBuffer || !spriteMap) {
+    if (initAttempted) return;
+    initAttempted = true;
+    initAudio().then(() => {
+      if (audioContext && audioBuffer && spriteMap) {
+        // If everything loaded successfully, we can safely play
+        // and next time the initial if-block won't be hit.
+        speak(text);
+      } else {
+        initAttempted = false;
+      }
+    }).catch(e => {
+      console.error("Audio init failed:", e);
+      initAttempted = false;
+    });
+    return;
   }
   
-  // Add an accent mark to the vowel to force the TTS to treat it as a Spanish word
-  // instead of an acronym or an English word (e.g., "in", "on", "ur").
-  const accents = { 'a': 'á', 'e': 'é', 'i': 'í', 'o': 'ó', 'u': 'ú' };
-  spokenText = spokenText.replace(/[aeiou]/, v => accents[v]);
-
-  const utt = new SpeechSynthesisUtterance(spokenText);
-  if (spanishVoice) utt.voice = spanishVoice;
-  utt.lang  = 'es-ES';
-  utt.rate  = 0.75;   // slow enough for a child to distinguish each vowel
-  utt.pitch = 1.0;
-  utt.onstart = () => setPlayingState(true);
-  utt.onend   = () => setPlayingState(false);
-  utt.onerror = () => setPlayingState(false);
-  window.speechSynthesis.speak(utt);
+  if (audioContext.state === 'suspended') {
+    audioContext.resume();
+  }
+  
+  if (sourceNode) {
+    try { 
+      sourceNode.stop(); 
+    } catch (e) {
+      // Safely ignore InvalidStateError which happens if the node was already stopped
+      if (!(e instanceof DOMException && e.name === 'InvalidStateError')) {
+        console.error('Unexpected error stopping audio:', e);
+      }
+    }
+    sourceNode.disconnect();
+  }
+  
+  const sprite = spriteMap[text];
+  if (!sprite) return;
+  
+  setPlayingState(true);
+  
+  sourceNode = audioContext.createBufferSource();
+  sourceNode.buffer = audioBuffer;
+  sourceNode.connect(audioContext.destination);
+  // start(when, offset, duration)
+  sourceNode.start(0, sprite.start, sprite.duration);
+  
+  sourceNode.onended = () => {
+    setPlayingState(false);
+  };
 }
 
 function setPlayingState(playing) {
