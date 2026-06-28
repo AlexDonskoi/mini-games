@@ -81,7 +81,17 @@ function speak(text) {
   window.speechSynthesis.cancel();
   
   // Fix TTS pronunciation for 'll' syllables which some engines read letter-by-letter
-  const spokenText = text.replace(/^ll/, 'y');
+  let spokenText = text.replace(/^ll/, 'y');
+  
+  // 'ze' is orthographically rare and often spelled out. 'ce' produces the exact same sound.
+  if (spokenText === 'ze') {
+    spokenText = 'ce';
+  }
+  
+  // Add an accent mark to the vowel to force the TTS to treat it as a Spanish word
+  // instead of an acronym or an English word (e.g., "in", "on", "ur").
+  const accents = { 'a': 'á', 'e': 'é', 'i': 'í', 'o': 'ó', 'u': 'ú' };
+  spokenText = spokenText.replace(/[aeiou]/, v => accents[v]);
 
   const utt = new SpeechSynthesisUtterance(spokenText);
   if (spanishVoice) utt.voice = spanishVoice;
