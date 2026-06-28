@@ -290,7 +290,7 @@ window.onload = () => {
   document.getElementById('stat-overlay').onclick = e => {
     const overlay = document.getElementById('stat-overlay');
     const panel   = document.getElementById('stat-panel');
-    if (e.target === overlay || e.target === panel) {
+    if (!panel.contains(e.target)) {
       overlay.style.display = 'none';
     }
   };
