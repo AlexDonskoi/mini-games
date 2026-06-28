@@ -79,7 +79,11 @@ if (typeof window.speechSynthesis !== 'undefined') {
 function speak(text) {
   if (typeof window.speechSynthesis === 'undefined') return;
   window.speechSynthesis.cancel();
-  const utt = new SpeechSynthesisUtterance(text);
+  
+  // Fix TTS pronunciation for 'll' syllables which some engines read letter-by-letter
+  const spokenText = text.replace(/^ll/, 'y');
+
+  const utt = new SpeechSynthesisUtterance(spokenText);
   if (spanishVoice) utt.voice = spanishVoice;
   utt.lang  = 'es-ES';
   utt.rate  = 0.75;   // slow enough for a child to distinguish each vowel
