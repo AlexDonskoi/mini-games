@@ -58,33 +58,59 @@ SYLLABLE_GROUPS.forEach(group => {
 });
 
 // ---------------------------------------------------------------------------
-// Audio Playback — Pregenerated MP3 sounds
+// Audio Playback — Web Audio API with audio sprite
 // ---------------------------------------------------------------------------
-let currentAudio = null;
+let audioContext = null;
+let audioBuffer = null;
+let spriteMap = null;
+
+async function initAudio() {
+  if (audioContext) return; // already initialized
+  audioContext = new (window.AudioContext || window.webkitAudioContext)();
+  
+  try {
+    const [oggResp, mapResp] = await Promise.all([
+      fetch('sounds/sprite.ogg'),
+      fetch('spriteMap.json')
+    ]);
+    const arrayBuffer = await oggResp.arrayBuffer();
+    audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
+    spriteMap = await mapResp.json();
+  } catch (e) {
+    console.error("Failed to load audio sprite:", e);
+  }
+}
+
+let sourceNode = null;
 
 function speak(text) {
-  if (currentAudio) {
-    currentAudio.pause();
-    currentAudio.currentTime = 0;
+  if (!audioContext || !audioBuffer || !spriteMap) {
+    initAudio().then(() => speak(text));
+    return;
   }
+  
+  if (audioContext.state === 'suspended') {
+    audioContext.resume();
+  }
+  
+  if (sourceNode) {
+    try { sourceNode.stop(); } catch(e) {}
+    sourceNode.disconnect();
+  }
+  
+  const sprite = spriteMap[text];
+  if (!sprite) return;
   
   setPlayingState(true);
   
-  currentAudio = new Audio(`sounds/${text}.mp3`);
+  sourceNode = audioContext.createBufferSource();
+  sourceNode.buffer = audioBuffer;
+  sourceNode.connect(audioContext.destination);
+  sourceNode.start(0, sprite.start, sprite.duration);
   
-  currentAudio.onended = () => {
+  sourceNode.onended = () => {
     setPlayingState(false);
   };
-  
-  currentAudio.onerror = () => {
-    console.error(`Failed to load audio for ${text}`);
-    setPlayingState(false);
-  };
-  
-  currentAudio.play().catch(e => {
-    console.error("Audio play failed:", e);
-    setPlayingState(false);
-  });
 }
 
 function setPlayingState(playing) {
