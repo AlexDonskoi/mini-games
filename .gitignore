@@ -2,3 +2,6 @@
 .env
 .vscode/
 .idea/
+
+# Ignore node_modules
+node_modules/
