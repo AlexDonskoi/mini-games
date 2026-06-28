@@ -58,50 +58,33 @@ SYLLABLE_GROUPS.forEach(group => {
 });
 
 // ---------------------------------------------------------------------------
-// Text-to-Speech — Web Speech API with a Spanish voice
+// Audio Playback — Pregenerated MP3 sounds
 // ---------------------------------------------------------------------------
-let spanishVoice = null;
-
-function loadVoices() {
-  const voices = window.speechSynthesis.getVoices();
-  spanishVoice =
-    voices.find(v => v.lang === 'es-MX') ||
-    voices.find(v => v.lang === 'es-ES') ||
-    voices.find(v => v.lang.startsWith('es')) ||
-    null;
-}
-
-if (typeof window.speechSynthesis !== 'undefined') {
-  window.speechSynthesis.onvoiceschanged = loadVoices;
-  loadVoices();
-}
+let currentAudio = null;
 
 function speak(text) {
-  if (typeof window.speechSynthesis === 'undefined') return;
-  window.speechSynthesis.cancel();
-  
-  // Fix TTS pronunciation for 'll' syllables which some engines read letter-by-letter
-  let spokenText = text.replace(/^ll/, 'y');
-  
-  // 'ze' is orthographically rare and often spelled out. 'ce' produces the exact same sound.
-  if (spokenText === 'ze') {
-    spokenText = 'ce';
+  if (currentAudio) {
+    currentAudio.pause();
+    currentAudio.currentTime = 0;
   }
   
-  // Add an accent mark to the vowel to force the TTS to treat it as a Spanish word
-  // instead of an acronym or an English word (e.g., "in", "on", "ur").
-  const accents = { 'a': 'á', 'e': 'é', 'i': 'í', 'o': 'ó', 'u': 'ú' };
-  spokenText = spokenText.replace(/[aeiou]/, v => accents[v]);
-
-  const utt = new SpeechSynthesisUtterance(spokenText);
-  if (spanishVoice) utt.voice = spanishVoice;
-  utt.lang  = 'es-ES';
-  utt.rate  = 0.75;   // slow enough for a child to distinguish each vowel
-  utt.pitch = 1.0;
-  utt.onstart = () => setPlayingState(true);
-  utt.onend   = () => setPlayingState(false);
-  utt.onerror = () => setPlayingState(false);
-  window.speechSynthesis.speak(utt);
+  setPlayingState(true);
+  
+  currentAudio = new Audio(`sounds/${text}.mp3`);
+  
+  currentAudio.onended = () => {
+    setPlayingState(false);
+  };
+  
+  currentAudio.onerror = () => {
+    console.error(`Failed to load audio for ${text}`);
+    setPlayingState(false);
+  };
+  
+  currentAudio.play().catch(e => {
+    console.error("Audio play failed:", e);
+    setPlayingState(false);
+  });
 }
 
 function setPlayingState(playing) {
