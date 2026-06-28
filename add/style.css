@@ -8,6 +8,26 @@
   min-height: 100vh;
   margin: 0;
 }
+#home-btn {
+  position: fixed;
+  top: 32px;
+  left: 40px;
+  font-size: 2rem;
+  text-decoration: none;
+  background: #fff;
+  border-radius: 50%;
+  width: 56px;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 12px #ffe082;
+  z-index: 1100;
+  transition: background 0.2s;
+}
+#home-btn:hover, #home-btn:focus {
+  background: rgba(255, 215, 0, 0.18);
+}
 #scoreboard {
   position: fixed;
   top: 32px;
